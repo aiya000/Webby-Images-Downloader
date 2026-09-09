@@ -42,6 +42,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +65,7 @@ import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import io.github.aiya000.webbyimagesdownloader.DownloadTracker
 import io.github.aiya000.webbyimagesdownloader.Downloader
 import io.github.aiya000.webbyimagesdownloader.ImageCollector
 import io.github.aiya000.webbyimagesdownloader.MainViewModel
@@ -76,6 +78,13 @@ fun MainScreen(viewModel: MainViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val page = state.page
+
+    // In-app toast when a whole batch of downloads has finished (only while the app is in the foreground)
+    LaunchedEffect(Unit) {
+        DownloadTracker.completed.collect { result ->
+            Toast.makeText(context, DownloadTracker.message(context, result), Toast.LENGTH_LONG).show()
+        }
+    }
 
     fun startDownload() {
         val pageUrl = page?.pageUrl ?: return
@@ -94,7 +103,7 @@ fun MainScreen(viewModel: MainViewModel) {
         }
     }
 
-    fun onDownloadClick() {
+    fun ensureStorageThenDownload() {
         val needsPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
             PackageManager.PERMISSION_GRANTED
@@ -102,6 +111,22 @@ fun MainScreen(viewModel: MainViewModel) {
             storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         } else {
             startDownload()
+        }
+    }
+
+    // The completion notification is optional: download either way once the user has answered
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { ensureStorageThenDownload() }
+
+    fun onDownloadClick() {
+        val needsNotificationPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        if (needsNotificationPermission) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            ensureStorageThenDownload()
         }
     }
 

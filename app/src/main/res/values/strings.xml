@@ -17,4 +17,9 @@
     <string name="download">ダウンロード</string>
     <string name="download_started">%1$d 件のダウンロードを開始しました</string>
     <string name="storage_permission_denied">保存先へのアクセスが許可されていません</string>
+
+    <string name="notification_channel_download_complete">ダウンロード完了</string>
+    <string name="download_complete_title">ダウンロードが完了しました</string>
+    <string name="download_complete_text">%1$d 件のダウンロードが完了しました</string>
+    <string name="download_complete_text_with_failures">%1$d 件のダウンロードが完了しました（%2$d 件失敗）</string>
 </resources>

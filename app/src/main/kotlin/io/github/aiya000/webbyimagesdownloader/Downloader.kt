@@ -9,22 +9,22 @@ import android.os.Environment
 object Downloader {
     private const val SUBDIRECTORY = "WebbyImagesDownloader"
 
-    /** Returns the number of downloads enqueued. */
+    /** Returns the number of downloads enqueued. Completion is reported by [DownloadTracker]. */
     fun enqueue(context: Context, pageUrl: String, imageUrls: List<String>): Int {
         val manager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        var count = 0
-        imageUrls.forEachIndexed { index, url ->
+        val ids = imageUrls.mapIndexed { index, url ->
             val fileName = fileNameFor(url, index)
             val request = DownloadManager.Request(Uri.parse(url))
                 .setTitle(fileName)
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                // Per-file progress only; the finished batch is announced by DownloadTracker
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "$SUBDIRECTORY/$fileName")
                 .addRequestHeader("User-Agent", ImageCollector.USER_AGENT)
                 .addRequestHeader("Referer", pageUrl)
             manager.enqueue(request)
-            count++
         }
-        return count
+        DownloadTracker.startBatch(context, ids)
+        return ids.size
     }
 
     private fun fileNameFor(url: String, index: Int): String {
