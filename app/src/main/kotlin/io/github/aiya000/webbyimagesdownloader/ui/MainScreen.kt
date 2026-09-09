@@ -29,7 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.OpenInFull
+import androidx.compose.material.icons.filled.ZoomOutMap
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -374,7 +374,7 @@ private fun ImageCell(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    Icons.Default.OpenInFull,
+                    Icons.Default.ZoomOutMap,
                     contentDescription = stringResource(R.string.open_viewer),
                     tint = Color.White.copy(alpha = 0.7f),
                     modifier = Modifier.size(12.dp),
