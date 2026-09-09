@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -51,6 +51,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardActions
@@ -236,10 +237,11 @@ private fun ImageGrid(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 96.dp),
     ) {
-        items(images, key = { it.url }) { image ->
+        itemsIndexed(images, key = { _, image -> image.url }) { index, image ->
             val order = selected.indexOf(image.url)
             ImageCell(
                 image = image,
+                number = index + 1,
                 pageUrl = pageUrl,
                 selectionOrder = if (order >= 0) order + 1 else null,
                 onClick = { onToggle(image.url) },
@@ -251,6 +253,7 @@ private fun ImageGrid(
 @Composable
 private fun ImageCell(
     image: WebImage,
+    number: Int,
     pageUrl: String,
     selectionOrder: Int?,
     onClick: () -> Unit,
@@ -258,56 +261,72 @@ private fun ImageCell(
     val context = LocalContext.current
     val isSelected = selectionOrder != null
     val shape = RoundedCornerShape(6.dp)
-    Box(
+    Column(
         modifier = Modifier
             .padding(4.dp)
-            .aspectRatio(1f)
             .clip(shape)
-            .then(
-                if (isSelected) Modifier.border(3.dp, MaterialTheme.colorScheme.primary, shape) else Modifier,
-            )
-            .background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(image.url)
-                .httpHeaders(
-                    NetworkHeaders.Builder()
-                        .set("Referer", pageUrl)
-                        .set("User-Agent", ImageCollector.USER_AGENT)
-                        .build(),
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .clip(shape)
+                .then(
+                    if (isSelected) Modifier.border(3.dp, MaterialTheme.colorScheme.primary, shape) else Modifier,
                 )
-                .crossfade(true)
-                .build(),
-            contentDescription = image.alt,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
-        if (selectionOrder != null) {
-            Box(
-                modifier = Modifier
-                    .padding(6.dp)
-                    .size(26.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .align(Alignment.TopStart),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = selectionOrder.toString(),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(image.url)
+                    .httpHeaders(
+                        NetworkHeaders.Builder()
+                            .set("Referer", pageUrl)
+                            .set("User-Agent", ImageCollector.USER_AGENT)
+                            .build(),
+                    )
+                    .crossfade(true)
+                    .build(),
+                contentDescription = image.alt,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+            if (selectionOrder != null) {
+                Box(
+                    modifier = Modifier
+                        .padding(6.dp)
+                        .size(26.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .align(Alignment.TopStart),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = selectionOrder.toString(),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+            if (isSelected) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.15f)),
                 )
             }
         }
-        if (isSelected) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.15f)),
-            )
-        }
+        Text(
+            text = stringResource(R.string.image_number, number),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

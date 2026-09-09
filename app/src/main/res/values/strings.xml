@@ -10,6 +10,7 @@
     <string name="fetch_failed">取得に失敗しました: %1$s</string>
     <string name="invalid_url">URL が正しくありません</string>
 
+    <string name="image_number">No. %1$d</string>
     <string name="selected_count">選択中: %1$d</string>
     <string name="select_all">すべて選択</string>
     <string name="clear_selection">選択を解除</string>
