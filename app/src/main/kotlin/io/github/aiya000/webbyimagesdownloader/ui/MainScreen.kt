@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,6 +45,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,6 +82,7 @@ fun MainScreen(viewModel: MainViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val page = state.page
+    var viewerIndex by remember { mutableStateOf<Int?>(null) }
 
     // In-app toast when a whole batch of downloads has finished (only while the app is in the foreground)
     LaunchedEffect(Unit) {
@@ -182,9 +187,20 @@ fun MainScreen(viewModel: MainViewModel) {
                     pageUrl = page.pageUrl,
                     selected = state.selected,
                     onToggle = viewModel::toggleSelection,
+                    onOpenViewer = { viewerIndex = it },
                 )
             }
         }
+    }
+
+    val openedIndex = viewerIndex
+    if (page != null && openedIndex != null && openedIndex in page.images.indices) {
+        ImageViewerDialog(
+            images = page.images,
+            initialIndex = openedIndex,
+            pageUrl = page.pageUrl,
+            onDismiss = { viewerIndex = null },
+        )
     }
 }
 
@@ -256,6 +272,7 @@ private fun ImageGrid(
     pageUrl: String,
     selected: List<String>,
     onToggle: (String) -> Unit,
+    onOpenViewer: (Int) -> Unit,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 110.dp),
@@ -270,6 +287,7 @@ private fun ImageGrid(
                 pageUrl = pageUrl,
                 selectionOrder = if (order >= 0) order + 1 else null,
                 onClick = { onToggle(image.url) },
+                onOpenViewer = { onOpenViewer(index) },
             )
         }
     }
@@ -282,6 +300,7 @@ private fun ImageCell(
     pageUrl: String,
     selectionOrder: Int?,
     onClick: () -> Unit,
+    onOpenViewer: () -> Unit,
 ) {
     val context = LocalContext.current
     val isSelected = selectionOrder != null
@@ -341,6 +360,24 @@ private fun ImageCell(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.15f)),
+                )
+            }
+            // Small, translucent, and separate from the selection tap so it is hard to hit by mistake
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(5.dp)
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .clickable(onClick = onOpenViewer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Default.OpenInFull,
+                    contentDescription = stringResource(R.string.open_viewer),
+                    tint = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.size(12.dp),
                 )
             }
         }
