@@ -1,5 +1,8 @@
 package io.github.aiya000.webbyimagesdownloader.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -18,8 +21,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +48,7 @@ import io.github.aiya000.webbyimagesdownloader.WebImage
 /**
  * Full-screen viewer for checking images before downloading.
  * Swipe between images at 1x; pinch, double tap, or double-tap-and-drag to zoom.
+ * The header / footer start hidden and toggle with a single tap; the back gesture closes the viewer.
  */
 @Composable
 fun ImageViewerDialog(
@@ -55,6 +62,7 @@ fun ImageViewerDialog(
         pageCount = { images.size },
     )
     val zoomedPages = remember { mutableStateMapOf<Int, Boolean>() }
+    var showChrome by remember { mutableStateOf(false) }
     val currentImage = images[pagerState.currentPage]
 
     Dialog(
@@ -77,42 +85,55 @@ fun ImageViewerDialog(
                     pageUrl = pageUrl,
                     isSettled = pagerState.settledPage == page,
                     onZoomedChange = { zoomedPages[page] = it },
+                    onTap = { showChrome = !showChrome },
                 )
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .background(Color.Black.copy(alpha = 0.4f))
-                    .padding(start = 16.dp)
-                    .align(Alignment.TopCenter),
-                verticalAlignment = Alignment.CenterVertically,
+            AnimatedVisibility(
+                visible = showChrome,
+                enter = fadeIn(),
+                exit = fadeOut(),
+                modifier = Modifier.align(Alignment.TopCenter),
             ) {
-                Text(
-                    text = stringResource(R.string.viewer_position, pagerState.currentPage + 1, images.size),
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close), tint = Color.White)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .background(Color.Black.copy(alpha = 0.4f))
+                        .padding(start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.viewer_position, pagerState.currentPage + 1, images.size),
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close), tint = Color.White)
+                    }
                 }
             }
 
-            Text(
-                text = currentImage.url,
-                color = Color.White.copy(alpha = 0.8f),
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.4f))
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .align(Alignment.BottomCenter),
-            )
+            AnimatedVisibility(
+                visible = showChrome,
+                enter = fadeIn(),
+                exit = fadeOut(),
+                modifier = Modifier.align(Alignment.BottomCenter),
+            ) {
+                Text(
+                    text = currentImage.url,
+                    color = Color.White.copy(alpha = 0.8f),
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Black.copy(alpha = 0.4f))
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
         }
     }
 }
@@ -123,6 +144,7 @@ private fun ZoomableImage(
     pageUrl: String,
     isSettled: Boolean,
     onZoomedChange: (Boolean) -> Unit,
+    onTap: () -> Unit,
 ) {
     val context = LocalContext.current
     val zoomState = remember { ZoomState(onZoomedChange = onZoomedChange) }
@@ -146,7 +168,7 @@ private fun ZoomableImage(
         contentScale = ContentScale.Fit,
         modifier = Modifier
             .fillMaxSize()
-            .zoomGestures(zoomState)
+            .zoomGestures(zoomState, onTap = onTap)
             .graphicsLayer {
                 scaleX = zoomState.scale
                 scaleY = zoomState.scale
