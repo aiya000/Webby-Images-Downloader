@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Webby Images Downloader</string>
+
+    <string name="url_label">ページの URL</string>
+    <string name="fetch">取得</string>
+    <string name="fetching">画像を取得しています…</string>
+    <string name="found_images">%1$d 枚の画像が見つかりました</string>
+    <string name="no_images">画像が見つかりませんでした</string>
+    <string name="fetch_failed">取得に失敗しました: %1$s</string>
+    <string name="invalid_url">URL が正しくありません</string>
+
+    <string name="selected_count">選択中: %1$d</string>
+    <string name="select_all">すべて選択</string>
+    <string name="clear_selection">選択を解除</string>
+    <string name="download">ダウンロード</string>
+    <string name="download_started">%1$d 件のダウンロードを開始しました</string>
+    <string name="storage_permission_denied">保存先へのアクセスが許可されていません</string>
 </resources>
