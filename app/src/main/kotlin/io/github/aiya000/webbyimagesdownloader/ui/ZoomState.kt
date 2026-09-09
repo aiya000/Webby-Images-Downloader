@@ -63,6 +63,11 @@ class ZoomState(
         if (isZoomed) reset() else setScale(DOUBLE_TAP_SCALE, focal)
     }
 
+    /** Called when a zoom gesture ends: a scale that is only nominally above 1x snaps back to exactly 1x. */
+    fun settle() {
+        if (scale < SNAP_TO_ONE_BELOW) reset()
+    }
+
     private fun clampOffset() {
         if (!isZoomed) {
             offset = Offset.Zero
@@ -76,6 +81,7 @@ class ZoomState(
     companion object {
         const val MAX_SCALE = 6f
         const val DOUBLE_TAP_SCALE = 2.5f
+        const val SNAP_TO_ONE_BELOW = 1.1f
     }
 }
 
@@ -139,7 +145,10 @@ private suspend fun AwaitPointerEventScope.trackPointers(
         val event = awaitPointerEvent()
         val pressed = event.changes.filter { it.pressed }
 
-        if (pressed.isEmpty()) return mode == GestureMode.Undecided
+        if (pressed.isEmpty()) {
+            if (mode == GestureMode.Pinch || mode == GestureMode.QuickScale) state.settle()
+            return mode == GestureMode.Undecided
+        }
 
         if (pressed.size >= 2) {
             mode = GestureMode.Pinch

@@ -98,8 +98,9 @@ fun ImageViewerDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .statusBarsPadding()
+                        // Background first so it also covers the area behind the status bar
                         .background(Color.Black.copy(alpha = 0.4f))
+                        .statusBarsPadding()
                         .padding(start = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
