@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Overridden to true in src/debug so debug builds can look different -->
+    <bool name="is_debug_build">false</bool>
+</resources>

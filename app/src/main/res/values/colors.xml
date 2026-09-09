@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#3F51B5</color>
+    <!-- App bar colour of debug builds -->
+    <color name="debug_app_bar">#EF6C00</color>
+    <color name="debug_on_app_bar">#FFFFFF</color>
 </resources>

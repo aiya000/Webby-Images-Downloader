@@ -42,6 +42,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,6 +55,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.booleanResource
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -139,6 +142,16 @@ fun MainScreen(viewModel: MainViewModel) {
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
+                // Debug builds get an orange app bar so they are easy to tell apart from the release build
+                colors = if (booleanResource(R.bool.is_debug_build)) {
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = colorResource(R.color.debug_app_bar),
+                        titleContentColor = colorResource(R.color.debug_on_app_bar),
+                        actionIconContentColor = colorResource(R.color.debug_on_app_bar),
+                    )
+                } else {
+                    TopAppBarDefaults.topAppBarColors()
+                },
                 title = {
                     Text(
                         if (state.selected.isEmpty()) stringResource(R.string.app_name)
