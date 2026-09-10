@@ -14,7 +14,7 @@ Repo: https://github.com/aiya000/Webby-Images-Downloader.git
 Builds:
   - versionName: 0.1.0
     versionCode: 1
-    commit: v0.1.0
+    commit: a19f65cac2d63b9e6e57a339a4cf090e529128f7
     subdir: app
     gradle:
       - yes
