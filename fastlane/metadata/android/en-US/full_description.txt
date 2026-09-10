@@ -1,0 +1,17 @@
+Webby Images Downloader lists the images on a web page, lets you pick the ones you want by tapping, and downloads them all at once.
+
+Share a page URL to the app from your browser, or paste it into the URL field. The app collects every image on the page and shows them in a grid, numbered in the order they appear on the page. Tap the images you want, tap Download, and they are saved to Download/WebbyImagesDownloader/ with their original file names.
+
+Features:
+
+• Receives a URL via the Android share sheet, or takes one pasted into the URL field
+• Collects images from img tags (including lazy-load attributes), srcset, picture sources, and og:image / twitter:image meta tags
+• Numbered grid with select-all and clear-selection buttons
+• Downloads selected images in one batch through Android's download manager, so they keep going after you leave the app
+• Notifies you when the batch finishes, including how many failed
+• Built-in full-screen viewer with swipe, pinch to zoom, double-tap, and quick-scale gestures
+• Light and dark theme
+
+The app has no trackers and no analytics. The only network access is to the page URL you enter and to the images on it.
+
+The UI is currently in Japanese only.

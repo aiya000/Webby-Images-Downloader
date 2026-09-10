@@ -1,0 +1,6 @@
+Initial release.
+
+• Receive a page URL from the share sheet or paste it in
+• List the images on the page in a numbered grid and pick them by tapping
+• Download the selected images in one batch, with a notification when it finishes
+• Built-in viewer with swipe, pinch to zoom, double-tap, and quick-scale gestures

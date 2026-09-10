@@ -1,0 +1,1 @@
+Pick images from a web page and download them all at once
