@@ -1,0 +1,6 @@
+# Categories referenced by fdroid/metadata/*.yml. `fdroid lint` validates against this list, which
+# fdroiddata provides in its own config/categories.yml; only the categories this app uses are listed.
+Internet:
+  name: Internet
+Download:
+  name: Download
