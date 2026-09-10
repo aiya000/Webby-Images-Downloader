@@ -21,5 +21,6 @@ Builds:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
+UpdateCheckData: gradle/libs.versions.toml|appVersionCode\s=\s"(\d+)"|.|appVersionName\s=\s"(.*)"
 CurrentVersion: 0.1.0
 CurrentVersionCode: 1
