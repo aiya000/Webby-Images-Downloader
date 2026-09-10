@@ -41,6 +41,15 @@ The phone connected via adb is the user's daily-use device.
 - Use the `debug-build`, `debug-install`, `release-build`, and `release-install` skills for building and installing
 - Product strings (UI labels, messages) are neutral Japanese
 
+## F-Droid
+
+- `fdroid/metadata/<app id>.yml` is the build metadata submitted to fdroiddata; keep it as the source of truth and
+  copy it over when opening or updating the fdroiddata merge request. `.github/workflows/fdroid-lint.yml` runs
+  `fdroid lint` and a `fdroid rewritemeta` formatting check on it
+- Store texts, changelogs, icon, and screenshots live in `fastlane/metadata/android/<locale>/`; add
+  `changelogs/<versionCode>.txt` for every release
+- A release is a `vX.Y.Z` tag matching `appVersionName` in `gradle/libs.versions.toml`; F-Droid picks up tags automatically
+
 ## Git
 
 - Commit with the `git-add` / `git-commit` skills. Stage explicit paths only
