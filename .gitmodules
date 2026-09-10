@@ -1,0 +1,3 @@
+[submodule "submodules/f-droid-data"]
+	path = submodules/f-droid-data
+	url = https://gitlab.com/aiya000/f-droid-data
