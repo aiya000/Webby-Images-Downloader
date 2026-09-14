@@ -1,16 +1,20 @@
 package io.github.aiya000.webbyimagesdownloader.ui
 
+import android.content.Context
+import android.graphics.BitmapFactory
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -34,16 +38,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import coil3.SingletonImageLoader
 import coil3.compose.AsyncImage
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
+import coil3.request.SuccessResult
 import io.github.aiya000.webbyimagesdownloader.ImageCollector
 import io.github.aiya000.webbyimagesdownloader.R
 import io.github.aiya000.webbyimagesdownloader.WebImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Full-screen viewer for checking images before downloading.
@@ -62,6 +71,8 @@ fun ImageViewerDialog(
         pageCount = { images.size },
     )
     val zoomedPages = remember { mutableStateMapOf<Int, Boolean>() }
+    // Keyed by URL so a resolution stays known while the pager recycles the page it was loaded on
+    val pixelSizes = remember { mutableStateMapOf<String, IntSize>() }
     var showChrome by remember { mutableStateOf(false) }
     val currentImage = images[pagerState.currentPage]
 
@@ -85,6 +96,7 @@ fun ImageViewerDialog(
                     pageUrl = pageUrl,
                     isSettled = pagerState.settledPage == page,
                     onZoomedChange = { zoomedPages[page] = it },
+                    onPixelSizeChange = { pixelSizes[images[page].url] = it },
                     onTap = { showChrome = !showChrome },
                 )
             }
@@ -110,6 +122,15 @@ fun ImageViewerDialog(
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.weight(1f),
                     )
+                    pixelSizes[currentImage.url]?.let { size ->
+                        Text(
+                            text = stringResource(R.string.viewer_resolution, size.width, size.height),
+                            color = Color.White.copy(alpha = 0.8f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close), tint = Color.White)
                     }
@@ -145,14 +166,20 @@ private fun ZoomableImage(
     pageUrl: String,
     isSettled: Boolean,
     onZoomedChange: (Boolean) -> Unit,
+    onPixelSizeChange: (IntSize) -> Unit,
     onTap: () -> Unit,
 ) {
     val context = LocalContext.current
     val zoomState = remember { ZoomState(onZoomedChange = onZoomedChange) }
+    var loaded by remember { mutableStateOf<SuccessResult?>(null) }
 
     // Once swiped away, come back at 1x
     LaunchedEffect(isSettled) {
         if (!isSettled) zoomState.reset()
+    }
+
+    LaunchedEffect(loaded) {
+        loaded?.let { onPixelSizeChange(originalPixelSize(context, it)) }
     }
 
     AsyncImage(
@@ -167,6 +194,7 @@ private fun ZoomableImage(
             .build(),
         contentDescription = image.alt,
         contentScale = ContentScale.Fit,
+        onSuccess = { loaded = it.result },
         modifier = Modifier
             .fillMaxSize()
             .zoomGestures(zoomState, onTap = onTap)
@@ -178,3 +206,25 @@ private fun ZoomableImage(
             },
     )
 }
+
+/**
+ * The size of the image as it is served on the web, in pixels.
+ *
+ * Coil may downsample a large image to the size of the view it is drawn in, so the decoded bitmap is
+ * only a fallback; the header of the original file in the disk cache is what actually gets read.
+ */
+private suspend fun originalPixelSize(context: Context, result: SuccessResult): IntSize =
+    withContext(Dispatchers.IO) {
+        val cachedSize = result.diskCacheKey?.let { key ->
+            SingletonImageLoader.get(context).diskCache?.openSnapshot(key)?.use { snapshot ->
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeFile(snapshot.data.toString(), bounds)
+                if (bounds.outWidth > 0 && bounds.outHeight > 0) {
+                    IntSize(bounds.outWidth, bounds.outHeight)
+                } else {
+                    null
+                }
+            }
+        }
+        cachedSize ?: IntSize(result.image.width, result.image.height)
+    }
