@@ -12,6 +12,8 @@ Features:
 • Built-in full-screen viewer with swipe, pinch to zoom, double-tap, and quick-scale gestures
 • Light and dark theme
 
-The app has no trackers and no analytics. The only network access is to the page URL you enter and to the images on it.
+The app has no trackers and no analytics. The only network access is to the page URL you enter and to the images on it. Like a browser, it tells image hosts on other sites only which site the page is on, not the full page URL.
 
-The UI is currently in Japanese only.
+Plain http:// pages are allowed too, so pages on a server in your local network can be opened.
+
+The UI is available in English and Japanese.

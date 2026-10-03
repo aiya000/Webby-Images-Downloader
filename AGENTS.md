@@ -39,7 +39,9 @@ The phone connected via adb is the user's daily-use device.
 - There is no `java` on `PATH`; gradle needs `JAVA_HOME=~/bin/android-studio/jbr` (JDK 17)
 - gradle writes to `~/.gradle`, which the Bash sandbox forbids: run gradle with `dangerouslyDisableSandbox: true`
 - Use the `debug-build`, `debug-install`, `release-build`, and `release-install` skills for building and installing
-- Product strings (UI labels, messages) are neutral Japanese
+- Product strings (UI labels, messages): English in `res/values/` (the fallback for every other locale), neutral
+  Japanese in `res/values-ja/`. Add or change a string in both in the same commit; `StringResourcesTest` checks it
+- Unit tests live in `app/src/test/kotlin/` (plain JUnit, no device): `./gradlew testDebugUnitTest`
 
 ## F-Droid
 

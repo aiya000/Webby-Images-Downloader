@@ -33,6 +33,13 @@ android {
         compose = true
     }
 
+    testOptions {
+        unitTests {
+            // the unit tests cover plain Kotlin logic; android.jar stubs answer defaults instead of throwing
+            isReturnDefaultValues = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -55,4 +62,14 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.okhttp)
     implementation(libs.jsoup)
+
+    testImplementation(libs.junit)
+}
+
+// StringResourcesTest reads the string XML from disk, which gradle cannot see as a test input;
+// without this the test task stays up to date after a string changes
+tasks.withType<Test>().configureEach {
+    inputs.dir(layout.projectDirectory.dir("src/main/res"))
+        .withPropertyName("resources")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }

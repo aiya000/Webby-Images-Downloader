@@ -20,7 +20,7 @@ object Downloader {
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "$SUBDIRECTORY/$fileName")
                 .addRequestHeader("User-Agent", ImageCollector.USER_AGENT)
-                .addRequestHeader("Referer", pageUrl)
+            RefererPolicy.refererFor(pageUrl, url)?.let { request.addRequestHeader("Referer", it) }
             manager.enqueue(request)
         }
         DownloadTracker.startBatch(context, ids)
