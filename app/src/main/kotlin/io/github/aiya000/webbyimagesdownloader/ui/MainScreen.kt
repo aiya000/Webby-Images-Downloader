@@ -75,6 +75,7 @@ import coil3.request.crossfade
 import io.github.aiya000.webbyimagesdownloader.DownloadTracker
 import io.github.aiya000.webbyimagesdownloader.Downloader
 import io.github.aiya000.webbyimagesdownloader.ImageCollector
+import io.github.aiya000.webbyimagesdownloader.RefererPolicy
 import io.github.aiya000.webbyimagesdownloader.MainViewModel
 import io.github.aiya000.webbyimagesdownloader.R
 import io.github.aiya000.webbyimagesdownloader.WebImage
@@ -340,8 +341,8 @@ private fun ImageCell(
                     .data(image.url)
                     .httpHeaders(
                         NetworkHeaders.Builder()
-                            .set("Referer", pageUrl)
                             .set("User-Agent", ImageCollector.USER_AGENT)
+                            .apply { RefererPolicy.refererFor(pageUrl, image.url)?.let { set("Referer", it) } }
                             .build(),
                     )
                     .crossfade(true)

@@ -49,6 +49,7 @@ import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import io.github.aiya000.webbyimagesdownloader.ImageCollector
+import io.github.aiya000.webbyimagesdownloader.RefererPolicy
 import io.github.aiya000.webbyimagesdownloader.R
 import io.github.aiya000.webbyimagesdownloader.WebImage
 import kotlinx.coroutines.Dispatchers
@@ -187,8 +188,8 @@ private fun ZoomableImage(
             .data(image.url)
             .httpHeaders(
                 NetworkHeaders.Builder()
-                    .set("Referer", pageUrl)
                     .set("User-Agent", ImageCollector.USER_AGENT)
+                    .apply { RefererPolicy.refererFor(pageUrl, image.url)?.let { set("Referer", it) } }
                     .build(),
             )
             .build(),
