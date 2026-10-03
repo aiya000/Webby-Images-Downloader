@@ -1,0 +1,4 @@
+• The UI is now in English, with Japanese for Japanese systems
+• Image hosts on other sites receive only the origin of the page as Referer, not the full page URL
+• Plain http:// pages can be opened, e.g. a server in your local network
+• The viewer shows the pixel resolution of the current image
