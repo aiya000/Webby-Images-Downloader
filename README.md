@@ -4,7 +4,7 @@ An Android app that lists the images on a web page, lets you pick the ones you w
 
 Share a page URL to the app from your browser (or paste it in), tap the images you want, tap **Download**, and they land in your Downloads folder.
 
-> The app's UI is currently in Japanese only.
+> The app's UI is in English and Japanese, following the system language.
 
 ## How it works
 
