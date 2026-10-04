@@ -196,7 +196,7 @@ private fun SelectionToggle(
     val description = stringResource(R.string.select_for_download)
     Box(
         modifier = modifier
-            .size(40.dp)
+            .size(34.dp)
             .clip(CircleShape)
             .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.4f))
             .then(if (isSelected) Modifier else Modifier.border(2.dp, Color.White, CircleShape))
@@ -208,7 +208,7 @@ private fun SelectionToggle(
             Text(
                 text = selectionOrder.toString(),
                 color = MaterialTheme.colorScheme.onPrimary,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
             )
         }
