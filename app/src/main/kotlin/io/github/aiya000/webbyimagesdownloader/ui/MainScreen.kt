@@ -213,6 +213,8 @@ fun MainScreen(viewModel: MainViewModel) {
             images = page.images,
             initialIndex = openedIndex,
             pageUrl = page.pageUrl,
+            selected = state.selected,
+            onToggle = viewModel::toggleSelection,
             onDismiss = { viewerIndex = null },
         )
     }

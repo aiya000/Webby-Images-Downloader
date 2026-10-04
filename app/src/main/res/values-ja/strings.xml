@@ -20,6 +20,7 @@
     <string name="close">閉じる</string>
     <string name="viewer_position">No. %1$d / %2$d</string>
     <string name="viewer_resolution">%1$d × %2$d</string>
+    <string name="select_for_download">ダウンロード対象にする</string>
 
     <string name="notification_channel_download_complete">ダウンロード完了</string>
     <string name="download_complete_title">ダウンロードが完了しました</string>

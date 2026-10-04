@@ -6,17 +6,22 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -32,11 +37,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -59,12 +69,15 @@ import kotlinx.coroutines.withContext
  * Full-screen viewer for checking images before downloading.
  * Swipe between images at 1x; pinch, double tap, or double-tap-and-drag to zoom.
  * The header / footer start hidden and toggle with a single tap; the back gesture closes the viewer.
+ * The header also holds a toggle that selects the current image for download, shared with the grid's selection.
  */
 @Composable
 fun ImageViewerDialog(
     images: List<WebImage>,
     initialIndex: Int,
     pageUrl: String,
+    selected: List<String>,
+    onToggle: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val pagerState = rememberPagerState(
@@ -108,33 +121,41 @@ fun ImageViewerDialog(
                 exit = fadeOut(),
                 modifier = Modifier.align(Alignment.TopCenter),
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        // Background first so it also covers the area behind the status bar
-                        .background(Color.Black.copy(alpha = 0.4f))
-                        .statusBarsPadding()
-                        .padding(start = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.viewer_position, pagerState.currentPage + 1, images.size),
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.weight(1f),
-                    )
-                    pixelSizes[currentImage.url]?.let { size ->
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            // Background first so it also covers the area behind the status bar
+                            .background(Color.Black.copy(alpha = 0.4f))
+                            .statusBarsPadding()
+                            .padding(start = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Text(
-                            text = stringResource(R.string.viewer_resolution, size.width, size.height),
-                            color = Color.White.copy(alpha = 0.8f),
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 1,
+                            text = stringResource(R.string.viewer_position, pagerState.currentPage + 1, images.size),
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.weight(1f),
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        pixelSizes[currentImage.url]?.let { size ->
+                            Text(
+                                text = stringResource(R.string.viewer_resolution, size.width, size.height),
+                                color = Color.White.copy(alpha = 0.8f),
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close), tint = Color.White)
+                        }
                     }
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close), tint = Color.White)
-                    }
+                    val order = selected.indexOf(currentImage.url)
+                    SelectionToggle(
+                        selectionOrder = if (order >= 0) order + 1 else null,
+                        onToggle = { onToggle(currentImage.url) },
+                        modifier = Modifier.padding(start = 16.dp, top = 12.dp),
+                    )
                 }
             }
 
@@ -157,6 +178,39 @@ fun ImageViewerDialog(
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }
+        }
+    }
+}
+
+/**
+ * Marks the current image for download, the same way a tap on its cell in the grid does.
+ * Selected, it shows the selection order like the grid's badge; otherwise an empty ring.
+ */
+@Composable
+private fun SelectionToggle(
+    selectionOrder: Int?,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isSelected = selectionOrder != null
+    val description = stringResource(R.string.select_for_download)
+    Box(
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.4f))
+            .then(if (isSelected) Modifier else Modifier.border(2.dp, Color.White, CircleShape))
+            .toggleable(value = isSelected, role = Role.Checkbox, onValueChange = { onToggle() })
+            .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) {
+        if (selectionOrder != null) {
+            Text(
+                text = selectionOrder.toString(),
+                color = MaterialTheme.colorScheme.onPrimary,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }
