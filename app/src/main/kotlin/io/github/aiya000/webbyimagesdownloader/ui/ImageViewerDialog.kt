@@ -198,7 +198,9 @@ private fun SelectionToggle(
         modifier = modifier
             .size(34.dp)
             .clip(CircleShape)
-            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.4f))
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.75f) else Color.Black.copy(alpha = 0.4f),
+            )
             .then(if (isSelected) Modifier else Modifier.border(2.dp, Color.White, CircleShape))
             .toggleable(value = isSelected, role = Role.Checkbox, onValueChange = { onToggle() })
             .semantics { contentDescription = description },
